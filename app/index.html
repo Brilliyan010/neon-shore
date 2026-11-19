@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neon Shore — Vice City Cover Studio</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <h1>NEON SHORE</h1>
+    <p>Vice City Cover Studio — your photo, our poster</p>
+  </div>
+  <div class="top-actions">
+    <button id="undo" type="button" title="Undo">Undo</button>
+    <button id="redo" type="button" title="Redo">Redo</button>
+    <button id="randomize" type="button" class="accent" title="Shuffle layout, grade and tilt">Surprise me</button>
+  </div>
+</header>
+<main class="studio">
+  <aside class="controls" aria-label="Cover controls">
+    <section>
+      <h2>1 · Photos</h2>
+      <p class="hint">Photos stay on your machine — nothing is uploaded.</p>
+      <label class="upload-btn">Add your photos
+        <input id="upload" type="file" accept="image/*" multiple>
+      </label>
+      <div id="tray" class="tray" aria-label="Photo tray"></div>
+      <div class="row">
+        <button id="fillAll" type="button">Fill all panels</button>
+        <button id="shuffle" type="button">Shuffle photos</button>
+      </div>
+    </section>
+    <section>
+      <h2>2 · Layout</h2>
+      <div id="layouts" class="picks" aria-label="Panel layouts"></div>
+    </section>
+    <section>
+      <h2>3 · Colour grade</h2>
+      <div id="grades" class="swatches" aria-label="Colour grades"></div>
+    </section>
+    <section>
+      <h2>4 · Caption</h2>
+      <label>Title
+        <input id="title" type="text" maxlength="24" value="SUNSET HEIST">
+      </label>
+      <label>Subtitle
+        <input id="subtitle" type="text" maxlength="30" value="Neon Shore">
+      </label>
+      <label>Title size
+        <input id="titleSize" type="range" min="0.6" max="1.5" step="0.05" value="1">
+      </label>
+      <label>Title tilt
+        <input id="titleTilt" type="range" min="-8" max="8" step="0.5" value="-2">
+      </label>
+      <label>Title position
+        <select id="titlePos">
+          <option value="bottom" selected>Bottom</option>
+          <option value="top">Top</option>
+        </select>
+      </label>
+    </section>
+    <section>
+      <h2>5 · Selected panel</h2>
+      <p id="panelLabel" class="hint">Panel 1 — pick a photo from the tray</p>
+      <label>Zoom
+        <input id="zoom" type="range" min="1" max="2.5" step="0.05" value="1">
+        <span id="zoomVal">100%</span>
+      </label>
+      <p class="hint">Click a panel on the cover to select it, then drag its photo to move it.</p>
+    </section>
+    <section>
+      <h2>6 · Effects</h2>
+      <label class="check"><input id="frame" type="checkbox" checked> White poster frame</label>
+      <label class="check"><input id="halftone" type="checkbox" checked> Halftone title dots</label>
+      <label class="check"><input id="badge" type="checkbox" checked> Star badge</label>
+      <label>Film grain
+        <input id="grain" type="range" min="0" max="1" step="0.05" value="0.6">
+      </label>
+      <label>Vignette
+        <input id="vignette" type="range" min="0" max="1" step="0.05" value="0.55">
+      </label>
+    </section>
+    <section>
+      <h2>7 · Export PNG</h2>
+      <div class="row sizes" role="group" aria-label="Preview size">
+        <button type="button" data-size="square" class="active">1:1</button>
+        <button type="button" data-size="portrait">4:5</button>
+        <button type="button" data-size="wide">16:9</button>
+      </div>
+      <div class="exports">
+        <button type="button" data-export="square" class="accent">PNG 1080 × 1080</button>
+        <button type="button" data-export="portrait" class="accent">PNG 1080 × 1350</button>
+        <button type="button" data-export="wide" class="accent">PNG 1920 × 1080</button>
+        <button id="exportAll" type="button">Export all three</button>
+      </div>
+      <p id="status" role="status"></p>
+    </section>
+  </aside>
+  <section class="stage" aria-label="Live preview">
+    <canvas id="preview" width="640" height="640" aria-label="Live cover preview"></canvas>
+    <p class="stage-hint">Live preview — what you see is the PNG you get.</p>
+  </section>
+</main>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
