@@ -29,8 +29,12 @@ export function drawPhotoPanel(ctx, img, rect, pan, W, H) {
   const base = Math.max(pw / img.naturalWidth, ph / img.naturalHeight) * zoom;
   const iw = img.naturalWidth * base;
   const ih = img.naturalHeight * base;
-  const dx = px + (pw - iw) / 2 + (pan.ox || 0) * pw;
-  const dy = py + (ph - ih) / 2 + (pan.oy || 0) * ph;
+  // Clamp the pan so the photo always covers the panel: a drag (or a scene
+  // nudge) can never pull the photo far enough to show the background.
+  const rawDx = px + (pw - iw) / 2 + (pan.ox || 0) * pw;
+  const rawDy = py + (ph - ih) / 2 + (pan.oy || 0) * ph;
+  const dx = Math.min(px, Math.max(px + pw - iw, rawDx));
+  const dy = Math.min(py, Math.max(py + ph - ih, rawDy));
   ctx.drawImage(img, dx, dy, iw, ih);
   ctx.restore();
 }
