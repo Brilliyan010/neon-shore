@@ -4,13 +4,15 @@
 [![rank](https://make.fun/badge/gta6-cover-art-01/Brilliyan010/neon-shore/rank.svg)](https://make.fun/bounty/gta6-cover-art-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 [![reward](https://make.fun/badge/gta6-cover-art-01/Brilliyan010/neon-shore/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
-Neon Shore — Vice City Cover Studio: offline GTA 6 cover-art web app — 6 layouts, 6 colour grades, per-panel crop/pan/zoom, gradient lettering, halftone + film-grain effects, and one-click PNG export at 1080x1080, 1080x1350 and 1920x1080.
+Neon Shore Cover Studio: your photos become Vice City key art — 7-panel pop-out hero, striped chrome title, cast tags, review strip, seal, billing block, 8 Vice grades, 3-size PNG export
 
 ## Run it
 
 ```sh
-node serve.ts
-# then open http://localhost:8080
+python3 -m http.server 8080 --directory app
+# open http://localhost:8080 — pick a layout, a grade and your photos, then Export PNG
+# build the entry the way the grader does (writes /output):
+MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
 
 ---

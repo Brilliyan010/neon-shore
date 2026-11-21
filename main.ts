@@ -1,53 +1,58 @@
-// Neon Shore — Vice City Cover Studio, handed in for gta6-cover-art-01.
-// A Node 22 program, standard library only. It copies the app (app/ : plain
-// static files, an offline cover maker with no build step and no network
-// request) and the screenshots (screenshots/ : the exported covers and the
-// editor at work) from beside this file into /output, then writes
-// /output/dossier.json with the vendored make.fun library — the summary the
-// judge reads. Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in
-// for /output, e.g. `MAKEFUN_OUTPUT_DIR=out node main.ts`.
+// Neon Shore Cover Studio — entrypoint (make.fun gta6-cover-art-01).
 //
-// The app itself: six multi-panel layouts, six sunset/neon colour grades,
-// per-panel crop and position, editable gradient title lettering, film grain,
-// vignette and halftone, and one-click PNG export at 1080x1080, 1080x1350
-// and 1920x1080. Photos are read on the maker's own machine, never uploaded.
-// Every font ships under app/fonts/ under the SIL Open Font License.
+// Copies the app (app/) and the screenshots (screenshots/) into the output
+// directory and writes /output/dossier.json with buildDossier from the kit's
+// vendor/makefun-app.ts library. Node 22, standard library only, no network,
+// no randomness, no clock: two runs over the same repository produce
+// byte-identical output.
+//
+// Usage:
+//   node main.ts                       -> writes to /output (the grader)
+//   MAKEFUN_OUTPUT_DIR=out node main.ts -> writes to out/ (local check)
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { buildDossier } from './vendor/makefun-app.ts';
+import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildDossier } from "./vendor/makefun-app.ts";
 
-const here = fileURLToPath(new URL('.', import.meta.url));
-const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+// The scorer's own caps, from the competition kit's RULES.txt:
+// dossier text 160 KiB; at most 4 screenshots of at most 256 KiB each;
+// app/ at most 993 files and directories, 48 MiB in all, paths <= 1000 bytes.
+const CAPS = {
+  text_max_bytes: 163840,
+  screenshots: { max: 4, max_bytes: 262144 },
+  app_max_files: 993,
+  app_max_bytes: 48 * 1024 * 1024,
+  app_path_max_bytes: 1000,
+} as const;
 
-/** Copies a directory tree from the repo into the output directory. */
-function copyTree(from, to) {
-  mkdirSync(to, { recursive: true });
-  cpSync(from, to, { recursive: true });
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)));
+const outDir = resolve(process.env.MAKEFUN_OUTPUT_DIR ?? "/output");
+
+function fail(message: string): never {
+  console.error(`main.ts: ${message}`);
+  process.exit(1);
 }
 
-// The program is deterministic: it writes only the repo's files and the dossier
-// the library builds from them, so two runs write the same bytes — the grader
-// runs it twice and compares. Nothing here reads the clock, the network or
-// any path outside this repository.
-copyTree(join(here, 'app'), join(out, 'app'));
-if (existsSync(join(here, 'screenshots'))) {
-  copyTree(join(here, 'screenshots'), join(out, 'screenshots'));
-}
+const appDir = join(repoRoot, "app");
+const shotsDir = join(repoRoot, "screenshots");
+if (!existsSync(join(appDir, "index.html"))) fail("app/index.html is missing");
+if (!existsSync(shotsDir)) fail("screenshots/ is missing");
 
-// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the
-// bytes; the other limits refuse an entry the scorer would refuse — more than
-// 4 screenshots or one over 256 KiB, more than 993 files in app/ or 48 MiB of
-// app files in all, or a path under app/ over 1000 bytes. app/ counts beside
-// /output's own 1000-entry cap, its screenshots/ and dossier.json.
-writeFileSync(
-  join(out, 'dossier.json'),
-  buildDossier(out, {
-    text_max_bytes: 163840,
-    screenshots: { max: 4, max_bytes: 262144 },
-    app_max_files: 993,
-    app_max_bytes: 50331648,
-    app_path_max_bytes: 1000,
-  }),
-);
+// Start from a clean output directory so stale files can never leak in.
+if (existsSync(outDir)) rmSync(outDir, { recursive: true, force: true });
+mkdirSync(outDir, { recursive: true });
+
+// Copy app/ and screenshots/ verbatim (plain files and directories only).
+cpSync(appDir, join(outDir, "app"), { recursive: true });
+cpSync(shotsDir, join(outDir, "screenshots"), { recursive: true });
+
+// The dossier must be byte for byte what buildDossier writes from the
+// copied app/ and screenshots/ — so build it from the output directory
+// itself, after the copies are in place.
+const dossier = buildDossier(outDir, CAPS);
+writeFileSync(join(outDir, "dossier.json"), dossier);
+
+const shotCount = ["01-neon-shore-cover.jpg", "02-editor.jpg", "03-portrait-cover.jpg", "04-square-grid.jpg"]
+  .filter((name) => existsSync(join(outDir, "screenshots", name))).length;
+console.log(`Neon Shore: wrote ${outDir} (app/, ${shotCount} screenshots, dossier.json ${dossier.length} bytes)`);
